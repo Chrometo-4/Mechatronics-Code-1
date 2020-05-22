@@ -1,0 +1,101 @@
+// Declare the input and output for Arduino.
+
+// Output: Right.
+const int OUT_RIGHT_FORWARD = 12; // Forward.
+const int OUT_RIGHT_REVERSE = 11; // Reverse.
+
+// Output: Left.
+const int OUT_LEFT_FORWARD = 10; // Forward.
+const int OUT_LEFT_REVERSE = 9; // Reverse.
+
+// Input: Light sensor.
+const int IN_LIGHT_SENSOR = A0; // Analog light sensor.
+
+// Direction constants.
+const int MOVE_IDLE = 0;
+const int MOVE_FORWARD = 1;
+const int MOVE_REVERSE = 2;
+const int MOVE_LEFT = 3;
+const int MOVE_RIGHT = 4;
+
+// Default.
+const int direction = MOVE_IDLE;
+const int LIGHT_THRESHOLD = 400; // Light minimum.
+
+void setup() {
+  // 'Right' or 'Left' can not 'Reverse' and 'Forward' simultaneously
+  pinMode(OUT_RIGHT_FORWARD, OUTPUT);
+  pinMode(OUT_RIGHT_REVERSE, OUTPUT);
+  pinMode(OUT_LEFT_FORWARD, OUTPUT);
+  pinMode(OUT_LEFT_REVERSE, OUTPUT);
+}
+void idle() {
+  digitalWrite(OUT_RIGHT_FORWARD, LOW);
+  digitalWrite(OUT_RIGHT_REVERSE, LOW);
+  digitalWrite(OUT_LEFT_FORWARD, LOW);
+  digitalWrite(OUT_LEFT_REVERSE, LOW);
+}
+void forward() {
+  digitalWrite(OUT_RIGHT_FORWARD, HIGH);
+  digitalWrite(OUT_RIGHT_REVERSE, LOW);
+  digitalWrite(OUT_LEFT_FORWARD, HIGH);
+  digitalWrite(OUT_LEFT_REVERSE, LOW);
+}
+void reverse() {
+  digitalWrite(OUT_RIGHT_FORWARD, LOW);
+  digitalWrite(OUT_RIGHT_REVERSE, HIGH);
+  digitalWrite(OUT_LEFT_FORWARD, LOW);
+  digitalWrite(OUT_LEFT_REVERSE, HIGH);
+}
+void left() {
+  digitalWrite(OUT_RIGHT_FORWARD, LOW);
+  digitalWrite(OUT_RIGHT_REVERSE, LOW);
+  digitalWrite(OUT_LEFT_FORWARD, HIGH);
+  digitalWrite(OUT_LEFT_REVERSE, LOW);
+}
+void right() {
+  digitalWrite(OUT_RIGHT_FORWARD, HIGH);
+  digitalWrite(OUT_RIGHT_REVERSE, LOW);
+  digitalWrite(OUT_LEFT_FORWARD, LOW);
+  digitalWrite(OUT_LEFT_REVERSE, LOW);
+}
+
+void changeDirection() {
+  if (direction == MOVE_FORWARD) {
+    direction = MOVE_REVERSE;
+  } 
+  else if (direction == MOVE_REVERSE || direction == MOVE_IDLE) {
+    direction = MOVE_FORWARD;
+  }
+}
+
+void loop() {
+  // Directions.
+  if (direction == MOVE_IDLE) { // Default.
+    idle();
+  }
+  else if (direction == MOVE_FORWARD) {
+    forward();
+  }
+  else if (direction == MOVE_REVERSE) {
+    reverse();
+  }
+  else if (direction == MOVE_LEFT) {
+    left();
+  }
+  else if (direction == MOVE_RIGHT) {
+    right();
+  }
+  else {
+    idle(); // Stop for emergency.
+  }
+
+  // Move with light. When the light is on, the rover moves. During Mars’ daylight, the rover moves.
+  int sensorValue = analogRead(IN_LIGHT_SENSOR);
+  if (sensorValue >= LIGHT_THRESHOLD) {
+    changeDirection();
+  }
+  else {
+    direction = MOVE_IDLE;
+  }
+}
